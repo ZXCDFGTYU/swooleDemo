@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>socket test</title>
+</head>
+<body>
+<div id="msg-group"></div>
+<div id="status"></div>
+<input type="text" name="text" id="msg"/>
+<button type="button" id="submit">submit</button>
+<button type="button" id="close">close</button>
+<script src="https://cdn.bootcss.com/jquery/3.2.1/jquery.min.js"></script>
+<script type="text/javascript">
+  $ (function () {
+    var ws = new WebSocket ('ws://192.168.179.130:8052');
+
+    // socket 连接时触发事件
+    ws.onopen = function (e) {
+      getStatus ();
+    };
+
+    // socket 数据提交
+    $ ('#submit').on ('click', function () {
+      var msg = $ ('#msg').val ();
+      $ ('#msg').val ('');
+
+      ws.send (msg);
+    });
+
+    // socket 监听
+    ws.onmessage = function (e) {
+      $ ('#msg-group').append ('<div>' + e.data + '</div>');
+    };
+
+    // socket 关闭触发
+    $ ('#close').on ('click', function () {
+      ws.close ();
+    });
+
+    // socket 关闭
+    ws.onclose = function (e) {
+      getStatus ();
+      alert ('closed');
+    }
+
+    function getStatus () {
+      var now = 'waiting start';
+
+      switch (ws.readyState) {
+        case 0: // 连接未开启
+          now = 'waiting start';
+          break;
+        case 1: // 连接开启，监听中
+          now = 'established';
+          break;
+        case 2: // 关闭中
+          now = 'closing';
+          break;
+        case 3: // 已关闭
+          now = 'closed';
+          break;
+        default: // 未知状态
+          now = 'unknown';
+          break;
+      }
+
+      var status = $ ('#status').html ();
+      $ ('#status').html (status + ' ' + now);
+    }
+  });
+</script>
+</body>
+</html>
